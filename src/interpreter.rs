@@ -1,81 +1,40 @@
-use crate::lexer::Lexer;
+use crate::parser::Parser;
+use crate::ast::*;
 use crate::token::*;
 
 #[derive(Debug)]
-pub struct Interpreter<'a> {
-    lexer: Lexer<'a>,
-}
+pub struct Interpreter {}
 
 type IResult = Result<f64, String>;
 
-impl<'a> Interpreter<'a> {
-    pub fn new(text: &'a str) -> Self {
-        let mut lexer = Lexer::new(text);
-        lexer.lex();
-        Self { lexer }
+impl Interpreter {
+
+    pub fn new() -> Self {
+        Self {}
     }
 
-    fn skip_whitespace(&mut self) {
-        while Token::Whitespace == self.lexer.peek() {
-            self.lexer.next();
-        }
-    }
-
-    fn term(&mut self) -> IResult {
-        self.skip_whitespace();
-        let token = self.lexer.next();
-
-        match token {
-            Token::Number(num) => Ok(num),
-            Token::Operator(Operator::Add) => self.term(),
-            Token::Operator(Operator::Sub) => Ok(self.term()? * -1f64),
-            Token::LParen => {
-                let result = self.expr();
-
-                let current_token = self.lexer.next();
-
-                match current_token {
-                    Token::RParen => result,
-                    _ => Err(format!("Expected closing ')' got {}", current_token)),
+    fn visit(&mut self, node: &Node) -> IResult {
+        match node {
+            Node::BinOperator(node) => {
+                match node.operator {
+                    Token::Operator(Operator::Add) => Ok(self.visit(&node.left)? + self.visit(&node.right)?),
+                    Token::Operator(Operator::Sub) => Ok(self.visit(&node.left)? - self.visit(&node.right)?),
+                    Token::Operator(Operator::Mul) => Ok(self.visit(&node.left)? * self.visit(&node.right)?),
+                    Token::Operator(Operator::Div) => Ok(self.visit(&node.left)? / self.visit(&node.right)?),
+                    _ => Err(format!("Expected Operator, got {}.", node)),
+                }
+            },
+            Node::Token(node) => {
+                match node {
+                    Token::Number(value) => Ok(*value),
+                    _ => Err(format!("Expected Number, got {}", node)),
                 }
             }
-            _ => Err(format!("Expected number got {:?}", token)),
         }
     }
 
-    fn addition_expr(&mut self) -> IResult {
-        let mut result = self.multiplication_expr()?;
-
-        while is_addsub(self.lexer.peek()) || is_whitespace(self.lexer.peek()) {
-            let token = self.lexer.next();
-            match token {
-                Token::Operator(Operator::Add) => result += self.multiplication_expr()?,
-                Token::Operator(Operator::Sub) => result -= self.multiplication_expr()?,
-                Token::Whitespace => self.skip_whitespace(),
-                _ => return Err(format!("Expected '+' or '-' got {}", token)),
-            }
-        }
-
-        Ok(result)
-    }
-
-    fn multiplication_expr(&mut self) -> IResult {
-        let mut result = self.term()?;
-
-        while is_muldiv(self.lexer.peek()) || is_whitespace(self.lexer.peek()) {
-            let token = self.lexer.next();
-            match token {
-                Token::Operator(Operator::Mul) => result *= self.term()?,
-                Token::Operator(Operator::Div) => result /= self.term()?,
-                Token::Whitespace => self.skip_whitespace(),
-                _ => return Err(format!("Expected '*' or '/' got {}", token)),
-            }
-        }
-
-        Ok(result)
-    }
-
-    pub fn expr(&mut self) -> IResult {
-        self.addition_expr()
-    }
+    pub fn interpret<'a>(&mut self, text: &'a str) -> IResult {
+        let mut parser = Parser::new(text);
+        self.visit(dbg!(&parser.parse()?))
+    }    
 }
