@@ -14,10 +14,10 @@ impl Interpreter {
 
     fn visit_bin_operator(&mut self, node: &BinOperator) -> IResult {
         match node.operator {
-            Token::Operator(Operator::Add) => {
+            Token::Operator(Operator::Plus) => {
                 Ok(self.visit(&node.left)? + self.visit(&node.right)?)
             }
-            Token::Operator(Operator::Sub) => {
+            Token::Operator(Operator::Minus) => {
                 Ok(self.visit(&node.left)? - self.visit(&node.right)?)
             }
             Token::Operator(Operator::Mul) => {
@@ -27,6 +27,17 @@ impl Interpreter {
                 Ok(self.visit(&node.left)? / self.visit(&node.right)?)
             }
             _ => Err(format!("Expected Operator, got {}.", node)),
+        }
+    }
+
+    fn visit_unary_operator(&mut self, node: &UnaryOperator) -> IResult {
+        match node.operator {
+            Token::Operator(Operator::Plus) => self.visit(&node.expression),
+            Token::Operator(Operator::Minus) => Ok(self.visit(&node.expression)? * -1f64),
+            _ => Err(format!(
+                "Expected Unary Operator '+' or '-', got {}",
+                node.operator
+            )),
         }
     }
 
@@ -40,6 +51,7 @@ impl Interpreter {
     fn visit(&mut self, node: &Node) -> IResult {
         match node {
             Node::BinOperator(node) => self.visit_bin_operator(node),
+            Node::UnaryOperator(node) => self.visit_unary_operator(node),
             Node::Token(node) => self.visit_token(node),
         }
     }

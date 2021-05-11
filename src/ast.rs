@@ -9,9 +9,16 @@ pub struct BinOperator {
 }
 
 #[derive(Debug, PartialEq)]
+pub struct UnaryOperator {
+    pub operator: Token,
+    pub expression: Node,
+}
+
+#[derive(Debug, PartialEq)]
 pub enum Node {
     Token(Token),
     BinOperator(Box<BinOperator>),
+    UnaryOperator(Box<UnaryOperator>),
 }
 
 impl fmt::Display for BinOperator {

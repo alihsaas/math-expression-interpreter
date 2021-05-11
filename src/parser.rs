@@ -27,7 +27,7 @@ impl<'a> Parser<'a> {
         expr : addition-expression
         addition-expression : multiplication-expression ((PLUS|MINUS) multiplication-expression)*
         multiplication-expression : factor ((MUL|DIV) factor)*
-        factor : INTEGER
+        term : (PLUS | MINUS) factor | NUMBER | LPAREN expr RPAREN
     */
 
     fn term(&mut self) -> PResult {
@@ -37,6 +37,12 @@ impl<'a> Parser<'a> {
 
         match token {
             Token::Number(_num) => Ok(Node::Token(token)),
+            Token::Operator(Operator::Plus) | Token::Operator(Operator::Minus) => {
+                Ok(Node::UnaryOperator(Box::new(UnaryOperator {
+                    operator: token,
+                    expression: self.term()?,
+                })))
+            }
             Token::LParen => {
                 let result = self.addition_expr();
 
@@ -59,14 +65,14 @@ impl<'a> Parser<'a> {
         while is_addsub(self.lexer.peek()) || is_whitespace(self.lexer.peek()) {
             let token = self.lexer.next();
             match token {
-                Token::Operator(Operator::Add) => {
+                Token::Operator(Operator::Plus) => {
                     node = Node::BinOperator(Box::new(BinOperator {
                         left: node,
                         operator: token,
                         right: self.multiplication_expr()?,
                     }))
                 }
-                Token::Operator(Operator::Sub) => {
+                Token::Operator(Operator::Minus) => {
                     node = Node::BinOperator(Box::new(BinOperator {
                         left: node,
                         operator: token,

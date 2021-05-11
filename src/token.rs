@@ -13,14 +13,14 @@ pub enum Token {
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Operator {
-    Add,
-    Sub,
+    Plus,
+    Minus,
     Mul,
     Div,
 }
 
 pub fn is_addsub(token: Token) -> bool {
-    token == Token::Operator(Operator::Add) || token == Token::Operator(Operator::Sub)
+    token == Token::Operator(Operator::Plus) || token == Token::Operator(Operator::Minus)
 }
 
 pub fn is_muldiv(token: Token) -> bool {

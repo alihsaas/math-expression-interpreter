@@ -30,8 +30,8 @@ impl<'a> Lexer<'a> {
                     let float = self.parse_float(&c.to_string());
                     self.tokens.push_front(Token::Number(float))
                 }
-                '+' => self.tokens.push_front(Token::Operator(Operator::Add)),
-                '-' => self.tokens.push_front(Token::Operator(Operator::Sub)),
+                '+' => self.tokens.push_front(Token::Operator(Operator::Plus)),
+                '-' => self.tokens.push_front(Token::Operator(Operator::Minus)),
                 '*' => self.tokens.push_front(Token::Operator(Operator::Mul)),
                 '/' => self.tokens.push_front(Token::Operator(Operator::Div)),
                 '(' => self.tokens.push_front(Token::LParen),
