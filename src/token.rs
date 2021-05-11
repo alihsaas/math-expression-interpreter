@@ -33,16 +33,12 @@ pub fn is_whitespace(token: Token) -> bool {
 
 impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            _ => f.write_str(&format!("{:?}", self)),
-        }
+        f.write_str(&format!("{:?}", self))
     }
 }
 
 impl fmt::Display for Operator {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            _ => f.write_str(&format!("{:?}", self)),
-        }
+        f.write_str(&format!("{:?}", self))
     }
 }

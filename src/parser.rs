@@ -7,16 +7,14 @@ type PResult = Result<Node, String>;
 
 #[derive(Debug)]
 pub struct Parser<'a> {
-    lexer: Lexer<'a>
+    lexer: Lexer<'a>,
 }
 
 impl<'a> Parser<'a> {
     pub fn new(text: &'a str) -> Self {
         let mut lexer = Lexer::new(&text);
         lexer.lex();
-        Self {
-            lexer
-        }
+        Self { lexer }
     }
 
     fn skip_whitespace(&mut self) {
@@ -50,7 +48,7 @@ impl<'a> Parser<'a> {
                     Token::RParen => result,
                     _ => Err(format!("Expected closing ')', got {}", current_token)),
                 }
-            },
+            }
             _ => Err(format!("Expected number got {:?}", token)),
         }
     }
@@ -61,18 +59,22 @@ impl<'a> Parser<'a> {
         while is_addsub(self.lexer.peek()) || is_whitespace(self.lexer.peek()) {
             let token = self.lexer.next();
             match token {
-                Token::Operator(Operator::Add) => node = Node::BinOperator(Box::new(BinOperator {
-                    left: node,
-                    operator: token,
-                    right: self.multiplication_expr()?,
-                })),
-                Token::Operator(Operator::Sub) => node = Node::BinOperator(Box::new(BinOperator {
-                    left: node,
-                    operator: token,
-                    right: self.multiplication_expr()?,
-                })),
+                Token::Operator(Operator::Add) => {
+                    node = Node::BinOperator(Box::new(BinOperator {
+                        left: node,
+                        operator: token,
+                        right: self.multiplication_expr()?,
+                    }))
+                }
+                Token::Operator(Operator::Sub) => {
+                    node = Node::BinOperator(Box::new(BinOperator {
+                        left: node,
+                        operator: token,
+                        right: self.multiplication_expr()?,
+                    }))
+                }
                 Token::Whitespace => self.skip_whitespace(),
-                _ => return Err(format!("Expected '*' or '/', got {}", token))
+                _ => return Err(format!("Expected '*' or '/', got {}", token)),
             }
         }
 
@@ -85,18 +87,22 @@ impl<'a> Parser<'a> {
         while is_muldiv(self.lexer.peek()) || is_whitespace(self.lexer.peek()) {
             let token = self.lexer.next();
             match token {
-                Token::Operator(Operator::Mul) => node = Node::BinOperator(Box::new(BinOperator {
-                    left: node,
-                    operator: token,
-                    right: self.term()?,
-                })),
-                Token::Operator(Operator::Div) => node = Node::BinOperator(Box::new(BinOperator {
-                    left: node,
-                    operator: token,
-                    right: self.term()?,
-                })),
+                Token::Operator(Operator::Mul) => {
+                    node = Node::BinOperator(Box::new(BinOperator {
+                        left: node,
+                        operator: token,
+                        right: self.term()?,
+                    }))
+                }
+                Token::Operator(Operator::Div) => {
+                    node = Node::BinOperator(Box::new(BinOperator {
+                        left: node,
+                        operator: token,
+                        right: self.term()?,
+                    }))
+                }
                 Token::Whitespace => self.skip_whitespace(),
-                _ => return Err(format!("Expected '*' or '/', got {}", token))
+                _ => return Err(format!("Expected '*' or '/', got {}", token)),
             }
         }
 
@@ -108,8 +114,8 @@ impl<'a> Parser<'a> {
         let current_token = self.lexer.peek();
 
         match current_token {
-        	Token::EndOfFile => result,
-        	_ => Err(format!("Expected EOF, got {}", current_token)),
+            Token::EndOfFile => result,
+            _ => Err(format!("Expected EOF, got {}", current_token)),
         }
     }
 }

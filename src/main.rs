@@ -1,11 +1,11 @@
 use crate::interpreter::Interpreter;
 use std::io;
 
+mod ast;
 mod interpreter;
 mod lexer;
-mod token;
-mod ast;
 mod parser;
+mod token;
 
 fn main() {
     loop {

@@ -20,7 +20,7 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn peek(&self) -> Token {
-        self.tokens.back().unwrap_or(&Token::Unknown).clone()
+        *self.tokens.back().unwrap_or(&Token::Unknown)
     }
 
     pub fn lex(&mut self) -> &VecDeque<Token> {
