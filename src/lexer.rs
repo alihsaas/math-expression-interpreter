@@ -85,3 +85,77 @@ impl<'a> Lexer<'a> {
         buffer.parse().expect("Failed to parse float")
     }
 }
+
+#[test]
+fn should_lex_addsub() {
+    let mut lexer = Lexer::new("9.10 + 2 - 10");
+    lexer.lex();
+    assert_eq!(
+        lexer.tokens,
+        [
+            Token::Number(9.1),
+            Token::Operator(Operator::Plus),
+            Token::Number(2.0),
+            Token::Operator(Operator::Minus),
+            Token::Number(10.0),
+            Token::EndOfFile,
+        ]
+    );
+}
+
+#[test]
+fn should_lex_muldivmod() {
+    let mut lexer = Lexer::new("5 * 40 % 10 / 10");
+    lexer.lex();
+    assert_eq!(
+        lexer.tokens,
+        [
+            Token::Number(5.0),
+            Token::Operator(Operator::Mul),
+            Token::Number(40.0),
+            Token::Operator(Operator::Modulus),
+            Token::Number(10.0),
+            Token::Operator(Operator::Div),
+            Token::Number(10.0),
+            Token::EndOfFile,
+        ]
+    );   
+}
+
+#[test]
+fn should_lex_paren() {
+    let mut lexer = Lexer::new("5 * (2 + 5)");
+    lexer.lex();
+    assert_eq!(
+        lexer.tokens,
+        [
+            Token::Number(5.0),
+            Token::Operator(Operator::Mul),
+            Token::LParen,
+            Token::Number(2.0),
+            Token::Operator(Operator::Plus),
+            Token::Number(5.0),
+            Token::RParen,
+            Token::EndOfFile,
+        ]
+    );
+}
+
+#[test]
+fn should_lex_exponent() {
+    let mut lexer = Lexer::new("5 ** (2 + 5)");
+    lexer.lex();
+    assert_eq!(
+        lexer.tokens,
+        [
+            Token::Number(5.0),
+            Token::Operator(Operator::Exponent),
+            Token::LParen,
+            Token::Number(2.0),
+            Token::Operator(Operator::Plus),
+            Token::Number(5.0),
+            Token::RParen,
+            Token::EndOfFile,
+        ]
+    );
+}
