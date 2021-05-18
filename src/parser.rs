@@ -20,8 +20,9 @@ impl<'a> Parser<'a> {
     /*
         expr : addition-expression
         addition-expression : multiplication-expression ((PLUS|MINUS) multiplication-expression)*
-        multiplication-expression : factor ((MUL|DIV|MODULUS) factor)*
-        term : (PLUS | MINUS) factor | NUMBER | LPAREN expr RPAREN | EXPONENT
+        multiplication-expression : exponent-expression ((MUL|DIV|MODULUS) exponent-expression)*
+        exponent-expression: term (EXPONENT term)*
+        term : (PLUS | MINUS) term | NUMBER | LPAREN expr RPAREN
     */
 
     fn term(&mut self) -> PResult {
