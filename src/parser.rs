@@ -17,22 +17,14 @@ impl<'a> Parser<'a> {
         Self { lexer }
     }
 
-    fn skip_whitespace(&mut self) {
-        while Token::Whitespace == self.lexer.peek() {
-            self.lexer.next();
-        }
-    }
-
     /*
         expr : addition-expression
         addition-expression : multiplication-expression ((PLUS|MINUS) multiplication-expression)*
-        multiplication-expression : factor ((MUL|DIV) factor)*
-        term : (PLUS | MINUS) factor | NUMBER | LPAREN expr RPAREN
+        multiplication-expression : factor ((MUL|DIV|MODULUS) factor)*
+        term : (PLUS | MINUS) factor | NUMBER | LPAREN expr RPAREN | EXPONENT
     */
 
     fn term(&mut self) -> PResult {
-        self.skip_whitespace();
-
         let token = self.lexer.next();
 
         match token {
@@ -45,9 +37,6 @@ impl<'a> Parser<'a> {
             }
             Token::LParen => {
                 let result = self.addition_expr();
-
-                self.skip_whitespace();
-
                 let current_token = self.lexer.next();
 
                 match current_token {
@@ -59,10 +48,30 @@ impl<'a> Parser<'a> {
         }
     }
 
+    fn exponent_expr(&mut self) -> PResult {
+        let mut node = self.term()?;
+
+        while is_exponent(self.lexer.peek()) {
+            let token = self.lexer.next();
+            match token {
+                Token::Operator(Operator::Exponent) => {
+                    node = Node::BinOperator(Box::new(BinOperator {
+                        left: node,
+                        operator: token,
+                        right: self.term()?,
+                    }))
+                }
+                _ => return Err(format!("Expected '**', got {}", token)),
+            }
+        }
+
+        Ok(node)
+    }
+
     fn addition_expr(&mut self) -> PResult {
         let mut node = self.multiplication_expr()?;
 
-        while is_addsub(self.lexer.peek()) || is_whitespace(self.lexer.peek()) {
+        while is_addsub(self.lexer.peek()) {
             let token = self.lexer.next();
             match token {
                 Token::Operator(Operator::Plus) => {
@@ -79,7 +88,6 @@ impl<'a> Parser<'a> {
                         right: self.multiplication_expr()?,
                     }))
                 }
-                Token::Whitespace => self.skip_whitespace(),
                 _ => return Err(format!("Expected '*' or '/', got {}", token)),
             }
         }
@@ -88,26 +96,32 @@ impl<'a> Parser<'a> {
     }
 
     fn multiplication_expr(&mut self) -> PResult {
-        let mut node = self.term()?;
+        let mut node = self.exponent_expr()?;
 
-        while is_muldiv(self.lexer.peek()) || is_whitespace(self.lexer.peek()) {
+        while is_muldivmod(self.lexer.peek()) {
             let token = self.lexer.next();
             match token {
                 Token::Operator(Operator::Mul) => {
                     node = Node::BinOperator(Box::new(BinOperator {
                         left: node,
                         operator: token,
-                        right: self.term()?,
+                        right: self.exponent_expr()?,
                     }))
                 }
                 Token::Operator(Operator::Div) => {
                     node = Node::BinOperator(Box::new(BinOperator {
                         left: node,
                         operator: token,
-                        right: self.term()?,
+                        right: self.exponent_expr()?,
                     }))
                 }
-                Token::Whitespace => self.skip_whitespace(),
+                Token::Operator(Operator::Modulus) => {
+                    node = Node::BinOperator(Box::new(BinOperator {
+                        left: node,
+                        operator: token,
+                        right: self.exponent_expr()?,
+                    }))
+                }
                 _ => return Err(format!("Expected '*' or '/', got {}", token)),
             }
         }

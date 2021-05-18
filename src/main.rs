@@ -1,4 +1,4 @@
-use crate::interpreter::Interpreter;
+use interpreter::{Interpreter, Value};
 use std::io;
 
 mod ast;
@@ -24,7 +24,10 @@ fn main() {
         let mut interpreter = Interpreter::new();
 
         match interpreter.interpret(&input) {
-            Ok(result) => println!("{}", result),
+            Ok(result) => match result {
+                Value::Number(num) => println!("{}", num),
+                Value::NoValue => (),
+            },
             Err(err) => eprintln!("ERROR: {}", err),
         };
     }

@@ -8,7 +8,6 @@ pub enum Token {
     RParen,
     EndOfFile,
     Unknown,
-    Whitespace,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -17,18 +16,22 @@ pub enum Operator {
     Minus,
     Mul,
     Div,
+    Modulus,
+    Exponent,
 }
 
 pub fn is_addsub(token: Token) -> bool {
     token == Token::Operator(Operator::Plus) || token == Token::Operator(Operator::Minus)
 }
 
-pub fn is_muldiv(token: Token) -> bool {
-    token == Token::Operator(Operator::Mul) || token == Token::Operator(Operator::Div)
+pub fn is_muldivmod(token: Token) -> bool {
+    token == Token::Operator(Operator::Mul)
+        || token == Token::Operator(Operator::Div)
+        || token == Token::Operator(Operator::Modulus)
 }
 
-pub fn is_whitespace(token: Token) -> bool {
-    token == Token::Whitespace
+pub fn is_exponent(token: Token) -> bool {
+    token == Token::Operator(Operator::Exponent)
 }
 
 impl fmt::Display for Token {
